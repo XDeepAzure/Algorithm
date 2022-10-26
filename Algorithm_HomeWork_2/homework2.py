@@ -42,10 +42,10 @@ def getPermute(n, T):
         else:
             lst = list(C)
             lst.sort()
-            for x in lst:                 #此时的集合C有序吗？
+            for x in lst:               #此时的lst是有序的
                 if len(p) >= 2:
                     max_three = max(max_three, p[-2]+p[-1]+x)
-                if max_three > T:       #基于此时C有序来剪枝的
+                if max_three > T:       #基于此时lst有序来剪枝的
                     break
                 p.append(x)
                 C.discard(x)
