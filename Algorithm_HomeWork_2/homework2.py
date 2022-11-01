@@ -1,8 +1,7 @@
 
 import copy
+from operator import mod
 import time
-
-from regex import P
 
 def getChain(target):
     answers, seq = [[]], [1,]         #seq记录回溯中产生的答案，answers记录全部答案
@@ -43,9 +42,16 @@ def getPermute(n, T):
             lst = list(C)
             lst.sort()
             for x in lst:               #此时的lst是有序的
+                minsum = 0
+                if len(lst) >= 4:       #取了x后最大的数与最小的俩数之和还能小于T吗？
+                    minsum = lst[0] + lst[1] + lst[-1]
+                    if x == lst[0] or x == lst[1]:
+                        minsum +=1
+                    if x == lst[-1]:
+                        minsum -= 1
                 if len(p) >= 2:
                     max_three = max(max_three, p[-2]+p[-1]+x)
-                if max_three > T:       #基于此时lst有序来剪枝的
+                if max_three > T or minsum > T:       #基于此时lst有序来剪枝的
                     break
                 p.append(x)
                 C.discard(x)
@@ -54,6 +60,40 @@ def getPermute(n, T):
                 p.pop()
     permute(C, -1)
     return answers
+
+def getModular(v: int, k:int):
+    """
+    这里默认D是无序的，即只要两个D的元素全部相同，而不管元素顺序都认为这两个D是相同的
+    默认D中的元素是小于v的，否则是无穷解。
+    """
+    X_set = list(range(v))
+    answers, p, mod = [], [], set()
+    def golomb(left_bound, mod):
+        if len(p) == k:
+            answers.append(copy.deepcopy(p))
+        else:
+            for left, x in enumerate(X_set[left_bound:]):
+                x_mod, exist_mod = set(), False
+                for t in p:
+                    m =(x-t) % v
+                    x_mod.add(m)
+                    if m in mod:
+                        exist_mod = True
+                        break
+                if not exist_mod:               #即余数不重复
+                    mod = mod.union(x_mod)
+                    p.append(x)
+                    golomb(left_bound+left+1, mod)
+                    p.pop()
+                    mod = mod - x_mod
+            pass
+        pass
+    for i, x in enumerate(X_set[:-k+1]):                      #决定第一个元素是啥
+        p.append(x)
+        golomb(i+1, mod)
+        p.pop()
+    return answers
+    pass
 
 def problem1():
     """
@@ -68,12 +108,28 @@ def problem1():
 
 def problem2():
     pairs = [(5, 9), (12, 21), (13, 23), (14, 24), (15, 25)]        #(n, T)
+    i = 0
     for n, T in pairs:
         print('-'*30)
         start = time.process_time()
-        print(getPermute(n, T), 'time=', time.process_time()-start)
-    pass 
+        result = getPermute(n, T)
+        i += 1
+        print(f"第{i}个：n={n}, T={T} ----", 'time=', time.process_time()-start)
+    pass
+def problem3():
+    paris = [[13,4], [21,5], [31,6], [48,7]]
+    i = 0
+    for v, k in paris:
+        print('-'*30)
+        start = time.process_time()
+        result = getModular(v, k)
+        i += 1
+        print(result)
+        break
+        print(f"第{i}个：v={v}, k={k}, num={len(result)} ----", 'time=', time.process_time()-start)
+    pass
 if __name__=='__main__':
     # problem1()
-    problem2()
+    # problem2()
+    problem3()
     pass
